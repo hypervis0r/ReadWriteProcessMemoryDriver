@@ -38,6 +38,9 @@ DriverIrpDeviceControl(
 	NTSTATUS ntResult = 0;
 	PIO_STACK_LOCATION Stack = IoGetCurrentIrpStackLocation(Irp);
 
+	/*
+		Execute IOCTL handler
+	*/
 	switch (Stack->Parameters.DeviceIoControl.IoControlCode)
 	{
 		case IOCTL_READ_PROCESS_MEMORY:
@@ -52,6 +55,18 @@ DriverIrpDeviceControl(
 
 			break;
 		}
+		case IOCTL_WRITE_PROCESS_MEMORY:
+		{
+			if (Stack->Parameters.DeviceIoControl.InputBufferLength < sizeof(RWMEM_WRITE))
+			{
+				ntResult = STATUS_BUFFER_TOO_SMALL;
+				break;
+			}
+
+			ntResult = RwMemWriteProcessMemory(Irp, (P_RWMEM_WRITE)Stack->Parameters.DeviceIoControl.Type3InputBuffer);
+			
+			break;
+		}
 		default:
 		{
 			ntResult = STATUS_INVALID_DEVICE_REQUEST;
@@ -59,6 +74,9 @@ DriverIrpDeviceControl(
 		}
 	}
 
+	/*
+		Finish the I/O request with the final result of the IOCTL
+	*/
 	Irp->IoStatus.Status = ntResult;
 	Irp->IoStatus.Information = 0;
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);

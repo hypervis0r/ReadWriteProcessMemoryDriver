@@ -18,3 +18,8 @@ NTSTATUS
 RwMemReadProcessMemory(
 	PIRP Irp,
 	P_RWMEM_READ ReadInfo);
+
+NTSTATUS
+RwMemWriteProcessMemory(
+	PIRP Irp,
+	P_RWMEM_WRITE WriteInfo);
